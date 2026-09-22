@@ -1,0 +1,129 @@
+{
+  "name": "02_02 File Q&A Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "download_url"
+            },
+            {
+              "name": "question"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "9d570a4a-3e99-42fc-b5b2-a49748ebb8a6",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-5-mini\",\n  \"input\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"input_text\",\n          \"text\": \"{{ $json.question.toJsonString().slice(1, -1) }}. \\n\\n\\n Present your answer in short bullet points with 15 words max. per bullet.\"\n        },\n        {\n          \"type\": \"input_file\",\n          \"file_url\": \"{{ $json.download_url.extractUrl() }}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        544,
+        0
+      ],
+      "id": "3dc9f506-6fc6-43a6-a6dc-2da82cc6268e",
+      "name": "HTTP Request",
+      "credentials": {
+        "openAiApi": {
+          "id": "vIt4XIujtaBmV5aq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4703ffb-9c04-4de0-bdc3-83ab3aad20f3",
+              "name": "content",
+              "value": "={{ $json.output[1].content[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "39f8844c-2b4a-4bf9-8a22-05415fea1d34",
+              "name": "source",
+              "value": "={{ $('When Executed by Another Workflow').item.json.download_url.extractUrlPath() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        0
+      ],
+      "id": "f107aa48-630d-4782-be75-fd4f60fa8136",
+      "name": "Output"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "download_url": "https://raw.githubusercontent.com/tobiaszwingmann/build-multi-agent-systems-with-n8n-orchestrating-reliable-ai-workflows-8509000/main/documents/disney_q1_fy25_research_note.pdf",
+          "question": "What was our rating here?"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "56d5f34e-472e-4a5d-9f93-11ddda74c149",
+  "meta": {
+    "instanceId": "94e1edcc34a91a151fc2ec1b99597068a304e37fdb946fc806f00f97776fce3a"
+  },
+  "nodeGroups": [],
+  "id": "F8G715YMeX4SXbIL",
+  "tags": []
+}
